@@ -90,19 +90,19 @@ function lastIndexOf($string, $item){
 <script src="plugin/ttw-music-player.js"></script>
 
 <?php
-if (count($audiofiles) > 0) {
-	$getID3 = new getID3;
+if (count ( $audiofiles ) > 0) {
+	$getID3 = new getID3 ();
 	?>
 	<script>var myPlaylist = [
 	<?php
-	foreach ($audiofiles as $audiofile) {
+	foreach ( $audiofiles as $audiofile ) {
 		$audiofilepath = $currentMediaPath . '/' . $audiofile;
-		$ThisFileInfo = $getID3->analyze($audiofilepath);
+		$ThisFileInfo = $getID3->analyze ( $audiofilepath );
 		?>
 		{
-	        mp3:'<?=$audiofilepath?>',
+	        mp3:'<?=str_replace('\'', '\\\'', $audiofilepath)?>',
 	        // oga:'mix/1.ogg',
-	        title:'<?=$ThisFileInfo['tags']['id3v2']['title'][0]?>',
+	        title:'<?=str_replace('\'', '\\\'', $ThisFileInfo['tags']['id3v2']['title'][0])?>',
 	        artist:'<?=$ThisFileInfo['tags']['id3v2']['artist'][0]?>',
 	        rating:4,
 	        buy:'#',
@@ -114,14 +114,14 @@ if (count($audiofiles) > 0) {
 	}
 	?>
    	];</script>
-	<script>
+<script>
 	$(document).ready(function() {
 	    var description = 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Fusce id tortor nisi. Aenean sodales diam ac lacus elementum scelerisque. Suspendisse a dui vitae lacus faucibus venenatis vel id nisl. Proin orci ante, ultricies nec interdum at, iaculis venenatis nulla. ';
 
 	    $('body').ttwMusicPlayer(myPlaylist, {
 	        autoPlay:false,
 	        description:description,
-	        tracksToShow:50,
+	        tracksToShow:20,
 	        currencySymbol:'$',
         	buyText:'BUY',
 
@@ -137,7 +137,7 @@ if (count($audiofiles) > 0) {
 </head>
 <body>
 <?php
-foreach ($subdirs as $subdir) {
+foreach ( $subdirs as $subdir ) {
 	?>
 	<a href="?dir=<?=$subdir?>"><?=$subdir?></a>
 	<br />

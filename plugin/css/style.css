@@ -1,20 +1,20 @@
 
 
 .ttw-music-player {
-    width: 370px;
-    margin: 60px auto;
+    width: 470px;
+    /*margin: 60px auto;*/
     font-family: 'Lato', arial, sans-serif;
 }
 
 .ttw-music-player .player {
-    width: 100%;
+    /*width: 100%;*/
 }
 
 /** Album Cover **/
 .ttw-music-player .album-cover {
     position: relative;
     float: left;
-    background: #333 url(../images/album-cover-bg.jpg) no-repeat 0 0 scroll;;
+    background: #333 url(../images/album-cover-200.png) no-repeat 0 0 scroll;;
     box-shadow: 0px 1px 4px rgba(0, 0, 0, .75);
     -moz-box-shadow: 0px 1px 4px rgba(0, 0, 0, .75);
     -webkit-box-shadow: 0px 1px 4px rgba(0, 0, 0, .75);
@@ -43,8 +43,8 @@
 .ttw-music-player .album-cover .img,
 .ttw-music-player .album-cover .highlight {
     display: block;
-    height: 125px;
-    width: 125px;
+    height: 200px;
+    width: 200px;
 }
 
 .ttw-music-player .album-cover img,
@@ -53,8 +53,8 @@
     position: absolute;
     top: 0;
     left: 0;
-    height:125px;
-    width:125px;
+    height:200px;
+    width:200px;
 }
 
 /** Track Info **/
