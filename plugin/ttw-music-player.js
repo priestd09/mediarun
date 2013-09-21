@@ -30,13 +30,13 @@
             ratingLevelOn:'.on',
             title: '.title',
             duration: '.duration',
-            buy:'.buy',
-            buyNotActive:'.not-active',
             playing:'.playing',
             moreButton:'.more',
             player:'.player',
             artist:'.artist',
             artistOuter:'.artist-outer',
+            album:'.album',
+            albumOuter:'.album-outer',
             albumCover:'.img',
             description:'.description',
             descriptionShowing:'.showing'
@@ -44,8 +44,6 @@
 
         defaultOptions = {
             ratingCallback:null,
-            currencySymbol:'$',
-            buyText:'BUY',
             tracksToShow:5,
             autoPlay:false,
             jPlayer:{}
@@ -83,7 +81,6 @@
                             '<span class="title"></span>' +
                             '<span class="duration"></span>' +
                             '<span class="rating"></span>' +
-                            '<a href="#" class="buy not-active" target="_blank"></a>' +
                         '</li>',
                 ratingBar:'<span class="rating-level rating-bar"></span>'
             };
@@ -231,8 +228,6 @@
 
                     setRating('track', $track, j);
 
-                    setBuyLink($track, j);
-
                     $track.data('index', j);
 
                     $tracksWrapper.append($track);
@@ -282,16 +277,6 @@
 
             function duration(index) {
                 return !isUndefined(myPlaylist[index].duration) ? myPlaylist[index].duration : '-';
-            }
-
-            function setBuyLink($track, index) {
-                if (!isUndefined(myPlaylist[index].buy)) {
-                    $track.find(cssSelector.buy).removeClass(attr(cssSelector.buyNotActive)).attr('href', myPlaylist[index].buy).html(buyText(index));
-                }
-            }
-
-            function buyText(index) {
-                return (!isUndefined(myPlaylist[index].price) ? options.currencySymbol + myPlaylist[index].price : '') + ' ' + options.buyText;
             }
 
             return{
@@ -355,13 +340,14 @@
 
         interfaceMgr = function() {
 
-            var $player, $title, $artist, $albumCover;
+            var $player, $title, $artist, $album, $albumCover;
 
 
             function init() {
                 $player = $(cssSelector.player),
                         $title = $player.find(cssSelector.title),
                         $artist = $player.find(cssSelector.artist),
+                        $album = $player.find(cssSelector.album),
                         $albumCover = $player.find(cssSelector.albumCover);
 
                 setDescription();
@@ -369,6 +355,7 @@
                 $self.bind('mbPlaylistAdvance mbPlaylistInit', function() {
                     setTitle();
                     setArtist();
+                    setAlbum();
                     setRating('current', null, current);
                     setCover();
                 });
@@ -379,14 +366,13 @@
 
                 //I would normally use the templating plugin for something like this, but I wanted to keep this plugin's footprint as small as possible
                 markup = '<div class="ttw-music-player">' +
-                        '<div class="player jp-interface">' +
-                        '<div class="album-cover">' +
-                        '<span class="img"></span>' +
+                        '    <div class="player jp-interface">' +
+                        '        <div class="album-cover">' +
+                        '            <span class="img"></span>' +
                         '            <span class="highlight"></span>' +
                         '        </div>' +
                         '        <div class="track-info">' +
                         '            <p class="title"></p>' +
-                        '            <p class="artist-outer">By <span class="artist"></span></p>' +
                         '            <div class="rating">' +
                         '                <span class="rating-level rating-star on"></span>' +
                         '                <span class="rating-level rating-star on"></span>' +
@@ -394,6 +380,8 @@
                         '                <span class="rating-level rating-star on"></span>' +
                         '                <span class="rating-level rating-star"></span>' +
                         '            </div>' +
+                        '            <p class="artist-outer"><span class="artist"></span></p>' +
+                        '            <p class="album-outer"><span class="album"></span></p>' +
                         '        </div>' +
                         '        <div class="player-controls">' +
                         '            <div class="main">' +
@@ -436,7 +424,6 @@
 
                 $interface = $(markup).css({display:'none', opacity:0}).appendTo($self).slideDown('fast', function() {
                     $interface.animate({opacity:1});
-
                     $self.trigger('mbInterfaceBuilt');
                 });
             }
@@ -450,6 +437,14 @@
                     $artist.parent(cssSelector.artistOuter).animate({opacity:0}, 'fast');
                 else {
                     $artist.html(myPlaylist[current].artist).parent(cssSelector.artistOuter).animate({opacity:1}, 'fast');
+                }
+            }
+
+            function setAlbum() {
+                if (isUndefined(myPlaylist[current].album))
+                    $album.parent(cssSelector.albumOuter).animate({opacity:0}, 'fast');
+                else {
+                    $album.html(myPlaylist[current].album).parent(cssSelector.albumOuter).animate({opacity:1}, 'fast');
                 }
             }
 

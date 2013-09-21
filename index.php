@@ -91,44 +91,41 @@ function lastIndexOf($string, $item){
 
 <?php
 if (count ( $audiofiles ) > 0) {
-	$getID3 = new getID3 ();
-	?>
-	<script>var myPlaylist = [
-	<?php
-	foreach ( $audiofiles as $audiofile ) {
-		$audiofilepath = $currentMediaPath . '/' . $audiofile;
-		$ThisFileInfo = $getID3->analyze ( $audiofilepath );
-		?>
-		{
-	        mp3:'<?=str_replace('\'', '\\\'', $audiofilepath)?>',
-	        // oga:'mix/1.ogg',
-	        title:'<?=str_replace('\'', '\\\'', $ThisFileInfo['tags']['id3v2']['title'][0])?>',
-	        artist:'<?=$ThisFileInfo['tags']['id3v2']['artist'][0]?>',
-	        rating:4,
-	        buy:'#',
-	        price:'0.99',
-	        duration:'<?=$ThisFileInfo['playtime_string']?>',
-	        cover:'<?="$currentMediaPath/folder.jpg"?>'
-	    },
-		<?php
-	}
-	?>
-   	];</script>
+$getID3 = new getID3 ();
+?>
 <script>
-	$(document).ready(function() {
-	    var description = 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Fusce id tortor nisi. Aenean sodales diam ac lacus elementum scelerisque. Suspendisse a dui vitae lacus faucibus venenatis vel id nisl. Proin orci ante, ultricies nec interdum at, iaculis venenatis nulla. ';
-
-	    $('body').ttwMusicPlayer(myPlaylist, {
-	        autoPlay:false,
-	        description:description,
-	        tracksToShow:20,
-	        currencySymbol:'$',
-        	buyText:'BUY',
-
-	        jPlayer:{
-	        	swfPath:'plugin/jquery-jplayer'
-	        }
-	    });
+var myPlaylist = [
+<?php
+foreach ( $audiofiles as $audiofile ) {
+    $audiofilepath = $currentMediaPath . '/' . $audiofile;
+    $ThisFileInfo = $getID3->analyze ( $audiofilepath );
+    ?>
+    {
+        mp3:'<?=str_replace('\'', '\\\'', $audiofilepath)?>',
+        // oga:'mix/1.ogg',
+        title:'<?=str_replace('\'', '\\\'', $ThisFileInfo['tags']['id3v2']['title'][0])?>',
+        artist:'<?=$ThisFileInfo['tags']['id3v2']['artist'][0]?>',
+        album:'<?=$ThisFileInfo['tags']['id3v2']['album'][0]?>',
+        rating:0,
+        duration:'<?=$ThisFileInfo['playtime_string']?>',
+        cover:'<?="$currentMediaPath/folder.jpg"?>'
+    },
+	<?php
+}
+?>
+];
+</script>
+<script>
+var description = 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Fusce id tortor nisi. Aenean sodales diam ac lacus elementum scelerisque. Suspendisse a dui vitae lacus faucibus venenatis vel id nisl. Proin orci ante, ultricies nec interdum at, iaculis venenatis nulla. ';
+$(document).ready(function() {
+    $('#audioplayer').ttwMusicPlayer(myPlaylist, {
+        autoPlay: true,
+        description: description,
+        tracksToShow: 20,
+        jPlayer: {
+            swfPath:'plugin/jquery-jplayer'
+        }
+    });
 });
 </script>
 <?php
@@ -136,13 +133,26 @@ if (count ( $audiofiles ) > 0) {
 ?>
 </head>
 <body>
-<?php
-foreach ( $subdirs as $subdir ) {
-	?>
-	<a href="?dir=<?=$subdir?>"><?=$subdir?></a>
-	<br />
-	<?php
-}
-?>
+<div>
+    <div id='audioplayer'></div>
+    <div id='filelist'>
+        <?php
+        foreach ( $subdirs as $subdir ) {
+            ?>
+            <a href="?dir=<?=$subdir?>"><?=$subdir?></a>
+            <br />
+            <?php
+        }
+        ?>
+        <?php
+        foreach ( $otherfiles as $otherfile ) {
+            ?>
+            <a href="?dir=<?=$otherfile?>"><?=$otherfile?></a>
+            <br />
+            <?php
+        }
+        ?>
+    </div>
+</div>
 </body>
 </html>
