@@ -25,3 +25,26 @@ body {
     float: left;
     margin-left: 20px;
 }
+
+.file-square {
+    float: left;
+    width: 100px;
+    height: 100px;
+    margin: 10px 0 0 10px;
+    border: 1px solid white;
+}
+
+.file-square .square-icon {
+    width: 32px;
+    height: 32px;
+    margin: 0px auto;
+    background-image: url('../images/extensions/folder.png');
+}
+
+.file-square .square-text {
+    clear: both;
+    max-height: 68px;
+    text-align: center;
+    overflow: hidden;
+    vertical-align: middle;
+}

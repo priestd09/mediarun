@@ -153,6 +153,11 @@ $(document).ready(function() {
         }
         ?>
     </div>
+    <div class="file-square" onclick="alert('click1')">
+        <div class="square-icon"></div>
+        <div class="square-text"><?=$otherfile?></div>
+    </div>
+    
 </div>
 </body>
 </html>
