@@ -31,20 +31,23 @@ body {
     width: 100px;
     height: 100px;
     margin: 10px 0 0 10px;
-    border: 1px solid white;
+    /*border: 1px solid black;*/
+    cursor: pointer;
 }
 
 .file-square .square-icon {
-    width: 32px;
-    height: 32px;
+    width: 64px;
+    height: 64px;
     margin: 0px auto;
-    background-image: url('../images/extensions/folder.png');
+    background-image:url('../images/extensions/icon_folder.png');
 }
 
 .file-square .square-text {
     clear: both;
-    max-height: 68px;
+    max-height: 36px;
     text-align: center;
     overflow: hidden;
     vertical-align: middle;
+    font-size: 10px;
+    font-family: 'Lato', arial, sans-serif;
 }

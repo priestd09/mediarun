@@ -1,11 +1,37 @@
 <?php
 //ini_set('display_errors',1);
 //ini_set('display_startup_errors',1);
-//error_reporting(-1);
+error_reporting(E_ALL);
 
 session_start();
 
 require_once ('modules/getID3-1.9.7/getid3.php');
+
+$audioExtensions = array (
+        'mp3',
+        'm4a',
+        'oga',
+        'wav',
+        'webma',
+        'fla' 
+);
+$imageExtensions = array (
+        'jpg',
+        'jpeg',
+        'gif',
+        'png',
+        'svg' 
+);
+$videoExtensions = array (
+        'm4v',
+        'ogv',
+        'webmv',
+        'flv' 
+);
+$textExtensions = array (
+        'txt',
+        'srt' 
+);
 
 $currentMediaPath = $_SESSION ['mediaPath'];
 //echo "<pre>currentMediaPath from cookie: $currentMediaPath</pre>";
@@ -41,41 +67,86 @@ $otherfiles = array ();
 
 $filenames = scandir ( $currentMediaPath );
 foreach ( $filenames as $filename ) {
-	if ($filename === '.')
-		continue;
-
-	if ($currentMediaPath == 'media-root' && $filename === '..')
-		continue;
-
-	$filepath = $currentMediaPath . '/' . $filename;
-	if (is_dir ( $filepath )) {
-		//echo "dir-$filepath";
-		$subdirs [] = $filename;
-	} else if (endsWith ( $filename, ".mp3" )) {
-		//echo "mp3-$filepath";
-		$audiofiles [] = $filename;
-	} else {
-		//echo "other-$filepath";
-		$otherfiles [] = $filename;
-	}
+    if ($filename === '.')
+        continue;
+    
+    if ($currentMediaPath == 'media-root' && $filename === '..')
+        continue;
+    
+    $filepath = $currentMediaPath . '/' . $filename;
+    if (is_dir ( $filepath )) {
+        // echo "dir-$filepath";
+        $subdirs [] = $filename;
+    } else {
+        // $isAudio = false;
+        foreach ( $audioExtensions as $extension ) {
+            if (endsWith ( $filename, ".$extension" )) {
+                // echo "mp3-$filepath";
+                $audiofiles [] = $filename;
+                // $isAudio = true;
+                break;
+            }
+        }
+        if (end ( $audiofiles ) != $filename) {
+            // echo "other-$filepath";
+            $otherfiles [] = $filename;
+        }
+    }
 }
 //var_dump($audiofiles);
 
 function startsWith($haystack, $needle) {
-	return $needle === "" || strpos ( $haystack, $needle ) === 0;
+    return $needle === "" || strpos ( $haystack, $needle ) === 0;
 }
 
 function endsWith($haystack, $needle) {
-	return $needle === "" || substr ( $haystack, - strlen ( $needle ) ) === $needle;
+    return $needle === "" || substr ( $haystack, - strlen ( $needle ) ) === $needle;
 }
 
-function lastIndexOf($string, $item){
-	$index=strpos(strrev($string),strrev($item));
-	if ($index){
-		$index = strlen($string)-strlen($item)-$index;
-		return $index;
-	} else
-		return -1;
+function lastIndexOf($string, $item) {
+    $index = strpos ( strrev ( $string ), strrev ( $item ) );
+    if ($index) {
+        $index = strlen ( $string ) - strlen ( $item ) - $index;
+        return $index;
+    } else {
+        return -1;
+    }
+}
+
+function getIconPath($filename) {
+    global $audioExtensions;
+    global $imageExtensions;
+    global $videoExtensions;
+    global $textExtensions;
+    
+    $lastIndex = lastIndexOf ( $filename, '.' );
+    $fileExtension = substr ( $filename, $lastIndex + 1 );
+    $extensionFound = false;
+    foreach ( $audioExtensions as $extension ) {
+        if ($fileExtension == $extension) {
+            $extensionFound = true;
+            return '../images/extensions/icon_music.png';
+        }
+    }
+    foreach ( $imageExtensions as $extension ) {
+        if ($fileExtension == $extension) {
+            $extensionFound = true;
+            return '../images/extensions/icon_image.png';
+        }
+    }
+    foreach ( $videoExtensions as $extension ) {
+        if ($fileExtension == $extension) {
+            $extensionFound = true;
+            return '../images/extensions/icon_video.png';
+        }
+    }
+    foreach ( $textExtensions as $extension ) {
+        if ($fileExtension == $extension) {
+            $extensionFound = true;
+            return '../images/extensions/icon_text.png';
+        }
+    }
+    return '../images/extensions/icon_sans.png';
 }
 ?>
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
@@ -84,7 +155,7 @@ function lastIndexOf($string, $item){
 <head>
 <title></title>
 <link rel="stylesheet" type="text/css" href="plugin/css/style.css">
-<link rel="stylesheet" type="text/css" href="css/demo.css">
+<link rel="stylesheet" type="text/css" href="css/demo.css?reload">
 <script src="js/jquery-1.6.1.min.js"></script>
 <script src="plugin/jquery-jplayer/jquery.jplayer.js"></script>
 <script src="plugin/ttw-music-player.js"></script>
@@ -133,31 +204,30 @@ $(document).ready(function() {
 ?>
 </head>
 <body>
-<div>
-    <div id='audioplayer'></div>
-    <div id='filelist'>
+    <div>
+        <div id='audioplayer'></div>
+        <div id='filelist'>
         <?php
         foreach ( $subdirs as $subdir ) {
             ?>
-            <a href="?dir=<?=$subdir?>"><?=$subdir?></a>
-            <br />
+            <div class="file-square" onclick="window.location = '?dir=<?=$subdir?>'">
+                <div class="square-icon"></div>
+                <div class="square-text"><?=$subdir?></div>
+            </div>
             <?php
         }
         ?>
         <?php
         foreach ( $otherfiles as $otherfile ) {
             ?>
-            <a href="?dir=<?=$otherfile?>"><?=$otherfile?></a>
-            <br />
+            <div class="file-square" onclick="window.location = '?dir=<?=$otherfile?>'">
+                <div class="square-icon" style="background-image:url('<?=getIconPath($otherfile);?>');"></div>
+                <div class="square-text"><?=$otherfile?></div>
+            </div>
             <?php
         }
         ?>
     </div>
-    <div class="file-square" onclick="alert('click1')">
-        <div class="square-icon"></div>
-        <div class="square-text"><?=$otherfile?></div>
     </div>
-    
-</div>
 </body>
 </html>
