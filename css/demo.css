@@ -21,16 +21,37 @@ body {
     background: #444 url(../images/tweed.png) repeat 0 0 scroll;
 }
 
+#audioplayer {
+    overflow: auto;
+    float: left;
+}
+
 #filelist {
     float: left;
-    margin-left: 20px;
+    margin-left: 30px;
+}
+
+.filegroup {
+    font-family: 'Lato', arial, sans-serif;
+    clear: both;
+    font-size: 14px;
+}
+
+.filegroup .category {;
+    
+}
+
+.filegroup .list {
+    clear: both;
+    margin-top: 10px;
+    overflow: auto;
 }
 
 .file-square {
     float: left;
     width: 100px;
     height: 100px;
-    margin: 10px 0 0 10px;
+    margin: 0 10px 10px 0;
     /*border: 1px solid black;*/
     cursor: pointer;
 }
@@ -39,7 +60,7 @@ body {
     width: 64px;
     height: 64px;
     margin: 0px auto;
-    background-image:url('../images/extensions/icon_folder.png');
+    background-image: url('../images/extensions/icon_folder.png');
 }
 
 .file-square .square-text {
@@ -48,6 +69,5 @@ body {
     text-align: center;
     overflow: hidden;
     vertical-align: middle;
-    font-size: 10px;
-    font-family: 'Lato', arial, sans-serif;
+    font-size: 12px;
 }

@@ -119,34 +119,60 @@ function getIconPath($filename) {
     global $videoExtensions;
     global $textExtensions;
     
-    $lastIndex = lastIndexOf ( $filename, '.' );
-    $fileExtension = substr ( $filename, $lastIndex + 1 );
+    $fileExtension = getSubstringAfter ( $filename, '.' );
     $extensionFound = false;
     foreach ( $audioExtensions as $extension ) {
-        if ($fileExtension == $extension) {
+        if (strtolower ( $fileExtension ) == $extension) {
             $extensionFound = true;
             return '../images/extensions/icon_music.png';
         }
     }
     foreach ( $imageExtensions as $extension ) {
-        if ($fileExtension == $extension) {
+        if (strtolower ( $fileExtension ) == $extension) {
             $extensionFound = true;
             return '../images/extensions/icon_image.png';
         }
     }
     foreach ( $videoExtensions as $extension ) {
-        if ($fileExtension == $extension) {
+        if (strtolower ( $fileExtension ) == $extension) {
             $extensionFound = true;
             return '../images/extensions/icon_video.png';
         }
     }
     foreach ( $textExtensions as $extension ) {
-        if ($fileExtension == $extension) {
+        if (strtolower ( $fileExtension ) == $extension) {
             $extensionFound = true;
             return '../images/extensions/icon_text.png';
         }
     }
     return '../images/extensions/icon_sans.png';
+}
+
+function getSubstringAfter($string, $after) {
+    $lastIndex = lastIndexOf ( $string, $after );
+    return substr ( $string, $lastIndex + 1 );
+}
+
+function getFileGroup($categoryName, $filenames, $isDir) {
+    if (count ( $filenames ) == 0)
+        return "";
+    
+    $html = '<div class="filegroup">';
+    $html .= '  <span class="category">' . $categoryName . ':</span>';
+    $html .= '  <div class="list">';
+    foreach ( $filenames as $filename ) {
+        if ($isDir) {
+            $iconStyle = 'background-image: url(\'../images/extensions/icon_folder.png\');';
+        } else
+            $iconStyle = 'style="background-image:url(\'' . getIconPath ( $filename ) . '\');"';
+        $html .= '<div class="file-square" onclick="window.location = \'?dir=' . $filename . '\'" title="' . $filename . '">';
+        $html .= '  <div class="square-icon" ' . $iconStyle . '></div>';
+        $html .= '  <div class="square-text">' . $filename . '</div>';
+        $html .= '</div>';
+    }
+    $html .= '  </div>';
+    $html .= '</div>';
+    return $html;
 }
 ?>
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
@@ -170,11 +196,15 @@ var myPlaylist = [
 foreach ( $audiofiles as $audiofile ) {
     $audiofilepath = $currentMediaPath . '/' . $audiofile;
     $ThisFileInfo = $getID3->analyze ( $audiofilepath );
+    $fixedFileName = str_replace('\'', '\\\'', $audiofilepath);
+    $fixedTitle = str_replace('\'', '\\\'', $ThisFileInfo['tags']['id3v2']['title'][0]);
+    if (strlen($fixedTitle) == 0)
+            $fixedTitle = getSubstringAfter ( $fixedFileName, '/' );
     ?>
     {
-        mp3:'<?=str_replace('\'', '\\\'', $audiofilepath)?>',
+        mp3:'<?=$fixedFileName?>',
         // oga:'mix/1.ogg',
-        title:'<?=str_replace('\'', '\\\'', $ThisFileInfo['tags']['id3v2']['title'][0])?>',
+        title:'<?=$fixedTitle?>',
         artist:'<?=$ThisFileInfo['tags']['id3v2']['artist'][0]?>',
         album:'<?=$ThisFileInfo['tags']['id3v2']['album'][0]?>',
         rating:0,
@@ -201,33 +231,16 @@ $(document).ready(function() {
 </script>
 <?php
 }
+
 ?>
 </head>
 <body>
     <div>
         <div id='audioplayer'></div>
         <div id='filelist'>
-        <?php
-        foreach ( $subdirs as $subdir ) {
-            ?>
-            <div class="file-square" onclick="window.location = '?dir=<?=$subdir?>'">
-                <div class="square-icon"></div>
-                <div class="square-text"><?=$subdir?></div>
-            </div>
-            <?php
-        }
-        ?>
-        <?php
-        foreach ( $otherfiles as $otherfile ) {
-            ?>
-            <div class="file-square" onclick="window.location = '?dir=<?=$otherfile?>'">
-                <div class="square-icon" style="background-image:url('<?=getIconPath($otherfile);?>');"></div>
-                <div class="square-text"><?=$otherfile?></div>
-            </div>
-            <?php
-        }
-        ?>
-    </div>
+            <?=getFileGroup('Folders', $subdirs, true)?>
+            <?=getFileGroup('Other', $otherfiles)?>
+        </div>
     </div>
 </body>
 </html>
