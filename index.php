@@ -5,33 +5,8 @@ error_reporting(E_ALL);
 
 session_start();
 
-require_once ('modules/getID3-1.9.7/getid3.php');
-
-$audioExtensions = array (
-        'mp3',
-        'm4a',
-        'oga',
-        'wav',
-        'webma',
-        'fla' 
-);
-$imageExtensions = array (
-        'jpg',
-        'jpeg',
-        'gif',
-        'png',
-        'svg' 
-);
-$videoExtensions = array (
-        'm4v',
-        'ogv',
-        'webmv',
-        'flv' 
-);
-$textExtensions = array (
-        'txt',
-        'srt' 
-);
+require_once 'modules/getID3-1.9.7/getid3.php';
+require_once 'inc/diskEntry.php';
 
 $currentMediaPath = $_SESSION ['mediaPath'];
 //echo "<pre>currentMediaPath from cookie: $currentMediaPath</pre>";
@@ -63,34 +38,35 @@ $_SESSION['mediaPath'] = $currentMediaPath;
 
 $subdirs = array ();
 $audiofiles = array ();
+$videofiles = array();
+$imagefiles = array();
+$textfiles = array();
 $otherfiles = array ();
 
 $filenames = scandir ( $currentMediaPath );
 foreach ( $filenames as $filename ) {
     if ($filename === '.')
         continue;
-    
+
     if ($currentMediaPath == 'media-root' && $filename === '..')
         continue;
-    
-    $filepath = $currentMediaPath . '/' . $filename;
-    if (is_dir ( $filepath )) {
+
+    $diskEntry = new DiskEntry ( $currentMediaPath, $filename );
+    if ($diskEntry->isDir ()) {
         // echo "dir-$filepath";
-        $subdirs [] = $filename;
+        $subdirs [] = $diskEntry;
     } else {
-        // $isAudio = false;
-        foreach ( $audioExtensions as $extension ) {
-            if (endsWith ( $filename, ".$extension" )) {
-                // echo "mp3-$filepath";
-                $audiofiles [] = $filename;
-                // $isAudio = true;
-                break;
-            }
-        }
-        if (end ( $audiofiles ) != $filename) {
-            // echo "other-$filepath";
-            $otherfiles [] = $filename;
-        }
+            // $isAudio = false;
+        if ($diskEntry->isAudio ())
+            $audiofiles [] = $diskEntry;
+        else if ($diskEntry->isVideo ())
+            $videofiles [] = $diskEntry;
+        else if ($diskEntry->isImage ())
+            $imagefiles [] = $diskEntry;
+        else if ($diskEntry->isText ())
+            $textfiles [] = $diskEntry;
+        else
+            $otherfiles [] = $diskEntry;
     }
 }
 //var_dump($audiofiles);
@@ -113,61 +89,25 @@ function lastIndexOf($string, $item) {
     }
 }
 
-function getIconPath($filename) {
-    global $audioExtensions;
-    global $imageExtensions;
-    global $videoExtensions;
-    global $textExtensions;
-    
-    $fileExtension = getSubstringAfter ( $filename, '.' );
-    $extensionFound = false;
-    foreach ( $audioExtensions as $extension ) {
-        if (strtolower ( $fileExtension ) == $extension) {
-            $extensionFound = true;
-            return '../images/extensions/icon_music.png';
-        }
-    }
-    foreach ( $imageExtensions as $extension ) {
-        if (strtolower ( $fileExtension ) == $extension) {
-            $extensionFound = true;
-            return '../images/extensions/icon_image.png';
-        }
-    }
-    foreach ( $videoExtensions as $extension ) {
-        if (strtolower ( $fileExtension ) == $extension) {
-            $extensionFound = true;
-            return '../images/extensions/icon_video.png';
-        }
-    }
-    foreach ( $textExtensions as $extension ) {
-        if (strtolower ( $fileExtension ) == $extension) {
-            $extensionFound = true;
-            return '../images/extensions/icon_text.png';
-        }
-    }
-    return '../images/extensions/icon_sans.png';
-}
+// ../images/extensions/icon_music.png
 
 function getSubstringAfter($string, $after) {
     $lastIndex = lastIndexOf ( $string, $after );
     return substr ( $string, $lastIndex + 1 );
 }
 
-function getFileGroup($categoryName, $filenames, $isDir) {
-    if (count ( $filenames ) == 0)
+function getFileGroup($categoryName, $diskEntries) {
+    if (count ( $diskEntries ) == 0)
         return "";
-    
+
     $html = '<div class="filegroup">';
     $html .= '  <span class="category">' . $categoryName . ':</span>';
     $html .= '  <div class="list">';
-    foreach ( $filenames as $filename ) {
-        if ($isDir) {
-            $iconStyle = 'background-image: url(\'../images/extensions/icon_folder.png\');';
-        } else
-            $iconStyle = 'style="background-image:url(\'' . getIconPath ( $filename ) . '\');"';
-        $html .= '<div class="file-square" onclick="window.location = \'?dir=' . $filename . '\'" title="' . $filename . '">';
+    foreach ( $diskEntries as $diskEntry ) {
+        $iconStyle = 'style="background-image:url(\'../images/extensions/icon_' . $diskEntry->getIconPartName() . '.png\');"';
+        $html .= '<div class="file-square" onclick="window.location = \'?dir=' . $diskEntry->getFilename() . '\'" title="' . $diskEntry->getFilename() . '">';
         $html .= '  <div class="square-icon" ' . $iconStyle . '></div>';
-        $html .= '  <div class="square-text">' . $filename . '</div>';
+        $html .= '  <div class="square-text">' . $diskEntry->getFilename() . '</div>';
         $html .= '</div>';
     }
     $html .= '  </div>';
@@ -181,7 +121,7 @@ function getFileGroup($categoryName, $filenames, $isDir) {
 <head>
 <title></title>
 <link rel="stylesheet" type="text/css" href="plugin/css/style.css">
-<link rel="stylesheet" type="text/css" href="css/demo.css?reload">
+<link rel="stylesheet" type="text/css" href="css/demo.css">
 <script src="js/jquery-1.6.1.min.js"></script>
 <script src="plugin/jquery-jplayer/jquery.jplayer.js"></script>
 <script src="plugin/ttw-music-player.js"></script>
@@ -193,10 +133,10 @@ $getID3 = new getID3 ();
 <script>
 var myPlaylist = [
 <?php
-foreach ( $audiofiles as $audiofile ) {
-    $audiofilepath = $currentMediaPath . '/' . $audiofile;
-    $ThisFileInfo = $getID3->analyze ( $audiofilepath );
-    $fixedFileName = str_replace('\'', '\\\'', $audiofilepath);
+foreach ( $audiofiles as $diskEntry ) {
+    //$audiofilepath = $currentMediaPath . '/' . $audiofile;
+    $ThisFileInfo = $getID3->analyze ( $diskEntry->getPath() );
+    $fixedFileName = str_replace('\'', '\\\'', $diskEntry->getPath());
     $fixedTitle = str_replace('\'', '\\\'', $ThisFileInfo['tags']['id3v2']['title'][0]);
     if (strlen($fixedTitle) == 0)
             $fixedTitle = getSubstringAfter ( $fixedFileName, '/' );
@@ -238,7 +178,10 @@ $(document).ready(function() {
     <div>
         <div id='audioplayer'></div>
         <div id='filelist'>
-            <?=getFileGroup('Folders', $subdirs, true)?>
+            <?=getFileGroup('Folders', $subdirs)?>
+            <?=getFileGroup('Video', $videofiles)?>
+            <?=getFileGroup('Image', $imagefiles)?>
+            <?=getFileGroup('Text', $textfiles)?>
             <?=getFileGroup('Other', $otherfiles)?>
         </div>
     </div>
